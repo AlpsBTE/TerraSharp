@@ -254,6 +254,7 @@ public final class Terraplusminus extends JavaPlugin implements Listener {
         manager.registerEventHandler(LifecycleEvents.COMMANDS, event -> {
             final Commands commands = event.registrar();
             commands.register("tpll", "Teleports you to longitude and latitude", List.of("tpc"), new TpllCommand());
+            commands.register("tpsg", "Teleports you to LV95 swiss grid coordinates", new TpllCommand());
             commands.register("where", "Gives you the longitude and latitude of your minecraft coordinates", new WhereCommand());
             commands.register("offset", "Displays the x,y and z offset of your world", new OffsetCommand());
         });

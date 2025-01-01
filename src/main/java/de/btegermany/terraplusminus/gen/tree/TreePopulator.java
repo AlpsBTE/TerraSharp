@@ -103,60 +103,57 @@ public class TreePopulator extends BlockPopulator {
 
     public void populate(@NotNull WorldInfo worldInfo, @NotNull Random random, int x, int z, @NotNull LimitedRegion limitedRegion) {
         World world = Bukkit.getWorld(worldInfo.getName());
-        if (generateTrees) {
-            try {
-                CachedChunkData data = this.loader.load(new ChunkPos(x - (xOffset / 16), z - (zOffset / 16))).get();
+        if (!generateTrees) return;
+        try {
+            CachedChunkData data = this.loader.load(new ChunkPos(x - (xOffset / 16), z - (zOffset / 16))).get();
 
-                byte[] treeCover = data.getCustom(EarthGeneratorPipelines.KEY_DATA_TREE_COVER, TreeCoverBaker.FALLBACK_TREE_DENSITY);
-                byte[] rng = RNG_CACHE.get();
+            byte[] treeCover = data.getCustom(EarthGeneratorPipelines.KEY_DATA_TREE_COVER, TreeCoverBaker.FALLBACK_TREE_DENSITY);
+            byte[] rng = RNG_CACHE.get();
 
-                for (int i = 0, dx = 0; dx < 16 >> 1; dx++) {
-                    for (int dz = 0; dz < 16 >> 1; dz++, i++) {
-                        if ((rng[i] & 0xFF) < (treeCover[(((x * 16) & 0xF) << 4) | ((z * 16) & 0xF)] & 0xFF)) {
-                            random.nextBytes(rng);
+            for (int i = 0, dx = 0; dx < 16 >> 1; dx++) {
+                for (int dz = 0; dz < 16 >> 1; dz++, i++) {
+                    if ((rng[i] & 0xFF) < (treeCover[(((x * 16) & 0xF) << 4) | ((z * 16) & 0xF)] & 0xFF)) {
+                        random.nextBytes(rng);
 
-                            int valueX = random.nextInt(15) + 1; // Depending on the size of the tree this should be changed
-                            int valueZ = random.nextInt(15) + 1;
-                            int groundY = 0;
-                            int waterY = 0;
-                            BlockState state = data.surfaceBlock(0, 0);
+                        int valueX = random.nextInt(15) + 1; // Depending on the size of the tree this should be changed
+                        int valueZ = random.nextInt(15) + 1;
+                        int groundY = 0;
+                        int waterY = 0;
+                        BlockState state = data.surfaceBlock(0, 0);
 
-                            try {
-                                groundY = data.groundHeight(valueX, valueZ);
-                                waterY = data.waterHeight(valueX, valueZ);
-                                state = data.surfaceBlock(valueX, valueZ);
-                            } catch (IndexOutOfBoundsException e) {
-                                e.printStackTrace();
-                            }
+                        try {
+                            groundY = data.groundHeight(valueX, valueZ);
+                            waterY = data.waterHeight(valueX, valueZ);
+                            state = data.surfaceBlock(valueX, valueZ);
+                        } catch (IndexOutOfBoundsException e) {
+                            e.printStackTrace();
+                        }
 
-                            if (groundY < waterY) {
-                                return;
-                            }
+                        if (groundY < waterY) {
+                            return;
+                        }
 
-                            Location loc = new Location(world, valueX + x * 16, groundY + 1 + yOffset, valueZ + z * 16); // is offset missing?
-                            if (!(groundY < waterY) && groundY + yOffset < world.getMaxHeight() - 35 && groundY + yOffset > world.getMinHeight() && state == null) {
-                                switch ((int) customBiomeProvider.getBiome()) {
-                                    // desert and savanna
-                                    case 4, 6, 17 -> generateCustomTree(limitedRegion, loc, "savanna");
-                                    // flower forest
-                                    case 14, 15 -> generateCustomTree(limitedRegion, loc, "oak", "birch");
-                                    // taiga
-                                    case 27 -> generateCustomTree(limitedRegion, loc, "spruce");
-                                    // snowy regions
-                                    case 28, 29, 30 -> {
-                                        // TODO: trees with snow
-                                    }
-                                    default -> generateCustomTree(limitedRegion, loc, "oak", "birch");
+                        Location loc = new Location(world, valueX + x * 16, groundY + 1 + yOffset, valueZ + z * 16); // is offset missing?
+                        if (!(groundY < waterY) && groundY + yOffset < world.getMaxHeight() - 35 && groundY + yOffset > world.getMinHeight() && state == null) {
+                            switch ((int) customBiomeProvider.getBiome()) {
+                                // desert and savanna
+                                case 4, 6, 17 -> generateCustomTree(limitedRegion, loc, "savanna");
+                                // flower forest
+                                case 14, 15 -> generateCustomTree(limitedRegion, loc, "oak", "birch");
+                                // taiga
+                                case 27 -> generateCustomTree(limitedRegion, loc, "spruce");
+                                // snowy regions
+                                case 28, 29, 30 -> {
+                                    // TODO: trees with snow
                                 }
+                                default -> generateCustomTree(limitedRegion, loc, "oak", "birch");
                             }
                         }
                     }
                 }
-
-
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
             }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
     }
 

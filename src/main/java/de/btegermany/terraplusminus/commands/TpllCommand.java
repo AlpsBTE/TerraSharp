@@ -27,13 +27,11 @@ public class TpllCommand implements BasicCommand {
 
     @Override
     public void execute(@NotNull CommandSourceStack stack, @NotNull String[] args) {
-
-        Player player = (Player) stack.getSender();
+        if (!(stack.getSender() instanceof Player player)) return;
         if (!player.hasPermission("t+-.tpll")) {
             player.sendMessage(Terraplusminus.config.getString("prefix") + "§7No permission for /tpll");
             return;
         }
-
 
         // Entity selector
 
@@ -258,7 +256,7 @@ public class TpllCommand implements BasicCommand {
         return true;
     }
 
-    public boolean isDouble(String str) {
+    private boolean isDouble(String str) {
         try {
             Double.parseDouble(str);
             return true;
