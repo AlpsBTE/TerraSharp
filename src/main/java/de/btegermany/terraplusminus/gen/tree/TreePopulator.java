@@ -51,7 +51,7 @@ public class TreePopulator extends BlockPopulator {
     CustomBiomeProvider customBiomeProvider;
 
     // List of Possible trees by type
-    HashMap<String, ArrayList<ArrayList<TreeBlock>>> trees = new HashMap();
+    HashMap<String, ArrayList<ArrayList<TreeBlock>>> trees = new HashMap<>();
 
 
     public TreePopulator(CustomBiomeProvider customBiomeProvider, int yOffset) {
@@ -136,21 +136,17 @@ public class TreePopulator extends BlockPopulator {
                             Location loc = new Location(world, valueX + x * 16, groundY + 1 + yOffset, valueZ + z * 16); // is offset missing?
                             if (!(groundY < waterY) && groundY + yOffset < world.getMaxHeight() - 35 && groundY + yOffset > world.getMinHeight() && state == null) {
                                 switch ((int) customBiomeProvider.getBiome()) {
-                                    case 4, 6, 17: // desert and savanna
-                                        generateCustomTree(limitedRegion, loc, "savanna");
-                                        break;
-                                    case 14, 15: // flower forest
-                                        generateCustomTree(limitedRegion, loc, "oak", "birch");
-                                        break;
-                                    case 27: // taiga
-                                        generateCustomTree(limitedRegion, loc, "spruce");
-                                        break;
-                                    case 28, 29, 30: // snowy regions
+                                    // desert and savanna
+                                    case 4, 6, 17 -> generateCustomTree(limitedRegion, loc, "savanna");
+                                    // flower forest
+                                    case 14, 15 -> generateCustomTree(limitedRegion, loc, "oak", "birch");
+                                    // taiga
+                                    case 27 -> generateCustomTree(limitedRegion, loc, "spruce");
+                                    // snowy regions
+                                    case 28, 29, 30 -> {
                                         // TODO: trees with snow
-                                        break;
-                                    default:
-                                        generateCustomTree(limitedRegion, loc, "oak", "birch");
-                                        break;
+                                    }
+                                    default -> generateCustomTree(limitedRegion, loc, "oak", "birch");
                                 }
                             }
                         }
@@ -168,9 +164,7 @@ public class TreePopulator extends BlockPopulator {
 
         ArrayList<ArrayList<TreeBlock>> trees = new ArrayList<>();
         for (String type : types) {
-            this.trees.get(type).forEach((tree) -> {
-                trees.add(tree);
-            });
+            trees.addAll(this.trees.get(type));
         }
 
         // Random Tree

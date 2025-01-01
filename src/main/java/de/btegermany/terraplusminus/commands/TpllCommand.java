@@ -15,7 +15,6 @@ import net.buildtheearth.terraminusminus.projection.GeographicProjection;
 import net.buildtheearth.terraminusminus.projection.OutOfProjectionBoundsException;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
@@ -133,11 +132,10 @@ public class TpllCommand implements BasicCommand {
             }
 
             ChunkGenerator generator = tpWorld.getGenerator();
-            if (!(generator instanceof RealWorldGenerator)) { // after server reload the generator isnt instanceof RealWorldGenerator anymore
+            if (!(generator instanceof RealWorldGenerator terraGenerator)) { // after server reload the generator isnt instanceof RealWorldGenerator anymore
                 stack.getSender().sendMessage(Terraplusminus.config.getString("prefix") + RED + "The world generator must be set to Terraplusminus");
                 return;
             }
-            RealWorldGenerator terraGenerator = (RealWorldGenerator) generator;
             EarthGeneratorSettings generatorSettings = terraGenerator.getSettings();
             GeographicProjection projection = generatorSettings.projection();
             int yOffset = terraGenerator.getYOffset();

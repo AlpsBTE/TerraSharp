@@ -18,11 +18,10 @@ public class WhereCommand implements BasicCommand {
 
     @Override
     public void execute(@NotNull CommandSourceStack stack, @NotNull String[] args) {
-        if (!(stack.getSender() instanceof Player)) {
+        if (!(stack.getSender() instanceof Player player)) {
             stack.getSender().sendMessage("This command can only be used by players!");
             return;
         }
-        Player player = (Player) stack.getSender();
         if (!player.hasPermission("t+-.where")) {
             player.sendMessage(Terraplusminus.config.getString("prefix") + "§7No permission for /where");
             return;

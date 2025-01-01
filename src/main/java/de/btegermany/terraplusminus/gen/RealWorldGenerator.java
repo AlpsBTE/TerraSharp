@@ -307,4 +307,12 @@ public class RealWorldGenerator extends ChunkGenerator {
     public boolean shouldGenerateStructures() {
         return false;
     }
+
+    public EarthGeneratorSettings getSettings() {
+        return settings;
+    }
+
+    public int getYOffset() {
+        return yOffset;
+    }
 }
