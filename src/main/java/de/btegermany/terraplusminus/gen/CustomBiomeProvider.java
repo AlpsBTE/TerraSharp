@@ -1,7 +1,8 @@
 package de.btegermany.terraplusminus.gen;
 
-import de.btegermany.terraplusminus.TerraSharp;
 import de.btegermany.terraplusminus.data.KoppenClimateData;
+import de.btegermany.terraplusminus.utils.io.ConfigPaths;
+import de.btegermany.terraplusminus.utils.io.ConfigUtil;
 import net.buildtheearth.terraminusminus.projection.GeographicProjection;
 import net.buildtheearth.terraminusminus.projection.OutOfProjectionBoundsException;
 import org.bukkit.block.Biome;
@@ -23,7 +24,7 @@ public class CustomBiomeProvider extends BiomeProvider {
             Biome.FLOWER_FOREST, Biome.STONY_PEAKS, Biome.SAVANNA_PLATEAU, Biome.WOODED_BADLANDS, Biome.SNOWY_TAIGA, Biome.OLD_GROWTH_SPRUCE_TAIGA, Biome.SWAMP, Biome.OLD_GROWTH_PINE_TAIGA, Biome.FOREST, Biome.DARK_FOREST,
             Biome.TAIGA, Biome.FROZEN_PEAKS, Biome.SNOWY_PLAINS, Biome.ICE_SPIKES));
 
-    private GeographicProjection projection;
+    private final GeographicProjection projection;
 
     public CustomBiomeProvider(GeographicProjection projection) {
         this.projection = projection;
@@ -32,7 +33,8 @@ public class CustomBiomeProvider extends BiomeProvider {
     @NotNull
     @Override
     public Biome getBiome(@NotNull WorldInfo worldInfo, int x, int y, int z) {
-        if (TerraSharp.config.getBoolean("different_biomes")) {
+
+        if (ConfigUtil.getInstance().configs[0].getBoolean(ConfigPaths.DIFFERENT_BIOMES)) {
             double[] coords;
             try {
                 coords = this.projection.toGeo(x, z);
@@ -79,9 +81,6 @@ public class CustomBiomeProvider extends BiomeProvider {
             }
             case 6 -> {
                 return Biome.SAVANNA;
-            }
-            case 8 -> {
-                return Biome.PLAINS;
             }
             case 9 -> {
                 return Biome.SUNFLOWER_PLAINS;

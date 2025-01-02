@@ -1,10 +1,12 @@
 package de.btegermany.terraplusminus.gen;
 
+import com.alpsbte.alpslib.io.config.ConfigurationUtil;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
-import de.btegermany.terraplusminus.TerraSharp;
 import de.btegermany.terraplusminus.gen.tree.TreePopulator;
 import de.btegermany.terraplusminus.utils.ConfigurationHelper;
+import de.btegermany.terraplusminus.utils.io.ConfigPaths;
+import de.btegermany.terraplusminus.utils.io.ConfigUtil;
 import lombok.Getter;
 import net.buildtheearth.terraminusminus.generator.CachedChunkData;
 import net.buildtheearth.terraminusminus.generator.ChunkDataLoader;
@@ -35,18 +37,7 @@ import java.util.concurrent.TimeUnit;
 import static java.lang.Math.min;
 import static net.buildtheearth.terraminusminus.substitutes.ChunkPos.blockToCube;
 import static net.buildtheearth.terraminusminus.substitutes.ChunkPos.cubeToMinBlock;
-import static org.bukkit.Material.BRICKS;
-import static org.bukkit.Material.DIRT;
-import static org.bukkit.Material.DIRT_PATH;
-import static org.bukkit.Material.FARMLAND;
-import static org.bukkit.Material.GRASS_BLOCK;
-import static org.bukkit.Material.GRAY_CONCRETE_POWDER;
-import static org.bukkit.Material.MOSS_BLOCK;
-import static org.bukkit.Material.MYCELIUM;
-import static org.bukkit.Material.SNOW;
-import static org.bukkit.Material.SNOW_BLOCK;
-import static org.bukkit.Material.STONE;
-import static org.bukkit.Material.WATER;
+import static org.bukkit.Material.*;
 import static org.bukkit.block.Biome.*;
 
 
@@ -77,13 +68,14 @@ public class RealWorldGenerator extends ChunkGenerator {
 
         EarthGeneratorSettings settings = EarthGeneratorSettings.parse(EarthGeneratorSettings.BTE_DEFAULT_SETTINGS);
 
+        ConfigurationUtil.ConfigFile configFile = ConfigUtil.getInstance().configs[0];
         GeographicProjection projection = new OffsetProjectionTransform(
                 settings.projection(),
-                TerraSharp.config.getInt("terrain_offset.x"),
-                TerraSharp.config.getInt("terrain_offset.z")
+                configFile.getInt(ConfigPaths.TERRAIN_OFFSET_X),
+                configFile.getInt(ConfigPaths.TERRAIN_OFFSET_Z)
         );
         if (yOffset == 0) {
-            this.yOffset = TerraSharp.config.getInt("terrain_offset.y");
+            this.yOffset = configFile.getInt(ConfigPaths.TERRAIN_OFFSET_Y);
         } else {
             this.yOffset = yOffset;
         }
@@ -96,15 +88,13 @@ public class RealWorldGenerator extends ChunkGenerator {
                 .softValues()
                 .build(new ChunkDataLoader(this.settings));
 
-        this.surfaceMaterial = ConfigurationHelper.getMaterial(TerraSharp.config, "surface_material", GRASS_BLOCK);
+        this.surfaceMaterial = ConfigurationHelper.getMaterial(configFile, ConfigPaths.SURFACE_MATERIAL, GRASS_BLOCK);
         this.materialMapping = Map.of(
-                "minecraft:bricks", ConfigurationHelper.getMaterial(TerraSharp.config, "building_outlines_material", BRICKS),
-                "minecraft:gray_concrete", ConfigurationHelper.getMaterial(TerraSharp.config, "road_material", GRAY_CONCRETE_POWDER),
-                "minecraft:dirt_path", ConfigurationHelper.getMaterial(TerraSharp.config, "path_material", MOSS_BLOCK)
+                "minecraft:bricks", ConfigurationHelper.getMaterial(configFile, ConfigPaths.BUILDING_OUTLINES_MATERIAL, BRICKS),
+                "minecraft:gray_concrete", ConfigurationHelper.getMaterial(configFile, ConfigPaths.ROAD_MATERIAL, GRAY_CONCRETE_POWDER),
+                "minecraft:dirt_path", ConfigurationHelper.getMaterial(configFile, ConfigPaths.PATH_MATERIAL, MOSS_BLOCK)
         );
-
     }
-
 
     @Override
     public void generateNoise(@NotNull WorldInfo worldInfo, @NotNull Random random, int chunkX, int chunkZ, @NotNull ChunkData chunkData) {

@@ -1,5 +1,6 @@
 package de.btegermany.terraplusminus.gen.tree;
 
+import com.alpsbte.alpslib.io.config.ConfigurationUtil;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import com.google.gson.JsonElement;
@@ -8,6 +9,8 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import de.btegermany.terraplusminus.TerraSharp;
 import de.btegermany.terraplusminus.gen.CustomBiomeProvider;
+import de.btegermany.terraplusminus.utils.io.ConfigPaths;
+import de.btegermany.terraplusminus.utils.io.ConfigUtil;
 import net.buildtheearth.terraminusminus.generator.CachedChunkData;
 import net.buildtheearth.terraminusminus.generator.ChunkDataLoader;
 import net.buildtheearth.terraminusminus.generator.EarthGeneratorPipelines;
@@ -56,11 +59,14 @@ public class TreePopulator extends BlockPopulator {
 
     public TreePopulator(CustomBiomeProvider customBiomeProvider, int yOffset) {
         this.customBiomeProvider = customBiomeProvider;
-        this.xOffset = TerraSharp.config.getInt("terrain_offset.x");
+
+        ConfigurationUtil.ConfigFile configFile = ConfigUtil.getInstance().configs[0];
+
+        this.xOffset = configFile.getInt(ConfigPaths.TERRAIN_OFFSET_X);
         this.yOffset = yOffset;
-        this.zOffset = TerraSharp.config.getInt("terrain_offset.z");
-        this.generateTrees = TerraSharp.config.getBoolean("generate_trees");
-        this.surface = TerraSharp.config.getString("surface_material");
+        this.zOffset = configFile.getInt(ConfigPaths.TERRAIN_OFFSET_Z);
+        this.generateTrees = configFile.getBoolean(ConfigPaths.GENERATE_TREES);
+        this.surface = configFile.getString(ConfigPaths.SURFACE_MATERIAL);
         this.cache = CacheBuilder.newBuilder()
                 .expireAfterAccess(5L, TimeUnit.MINUTES)
                 .softValues()
@@ -74,7 +80,7 @@ public class TreePopulator extends BlockPopulator {
 
             trees.put(treeSizes.getKey(), new ArrayList<>());
 
-            Bukkit.getLogger().log(Level.INFO, "[T+-] Loading Tree Type " + treeSizes.getKey());
+            TerraSharp.instance.getComponentLogger().info("[T#] Loading Tree Type " + treeSizes.getKey());
 
             treeSizes.getValue().getAsJsonObject().entrySet().forEach(treeNames -> {
 
@@ -97,8 +103,7 @@ public class TreePopulator extends BlockPopulator {
             });
 
         });
-        Bukkit.getLogger().log(Level.INFO, "[T+-] Finished loading " + treeCount[0] + " custom trees");
-
+        TerraSharp.instance.getComponentLogger().info("[T#] Finished loading " + treeCount[0] + " custom trees");
     }
 
     public void populate(@NotNull WorldInfo worldInfo, @NotNull Random random, int x, int z, @NotNull LimitedRegion limitedRegion) {

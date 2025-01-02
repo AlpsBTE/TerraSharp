@@ -1,24 +1,26 @@
 package de.btegermany.terraplusminus;
 
+import com.alpsbte.alpslib.io.YamlFileFactory;
+import com.alpsbte.alpslib.io.config.ConfigNotImplementedException;
 import de.btegermany.terraplusminus.commands.OffsetCommand;
 import de.btegermany.terraplusminus.commands.TpllCommand;
+import de.btegermany.terraplusminus.commands.TpsgCommand;
 import de.btegermany.terraplusminus.commands.WhereCommand;
 import de.btegermany.terraplusminus.events.PlayerJoinEvent;
 import de.btegermany.terraplusminus.events.PlayerMoveEvent;
 import de.btegermany.terraplusminus.events.PluginMessageEvent;
 import de.btegermany.terraplusminus.gen.RealWorldGenerator;
+import de.btegermany.terraplusminus.utils.ChatUtils;
 import de.btegermany.terraplusminus.utils.ConfigurationHelper;
-import de.btegermany.terraplusminus.utils.FileBuilder;
 import de.btegermany.terraplusminus.utils.LinkedWorld;
 import de.btegermany.terraplusminus.utils.PlayerHashMapManagement;
+import de.btegermany.terraplusminus.utils.io.ConfigPaths;
+import de.btegermany.terraplusminus.utils.io.ConfigUtil;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.buildtheearth.terraminusminus.TerraConfig;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldInitEvent;
@@ -32,8 +34,10 @@ import java.io.*;
 import java.util.List;
 import java.util.logging.Level;
 
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
+
 public final class TerraSharp extends JavaPlugin implements Listener {
-    public static FileConfiguration config;
     public static TerraSharp instance;
 
     @Override
@@ -44,17 +48,25 @@ public final class TerraSharp extends JavaPlugin implements Listener {
 
         getLogger().log(Level.INFO,
                 "  _____  _  _\n" +
-                " |_   _|| || |_\n" +
-                "   | ||_  ..  _|\n" +
-                "   | ||_      _|\n" +
-                "   |_|  |_||_|\n" +
-                "TerraSharp version: " + pluginVersion);
+                        " |_   _|| || |_\n" +
+                        "   | ||_  ..  _|\n" +
+                        "   | ||_      _|\n" +
+                        "   |_|  |_||_|\n" +
+                        "TerraSharp version: " + pluginVersion);
 
-        // Config ------------------]
-        ConfigurationSerialization.registerClass(ConfigurationSerializable.class);
-        this.saveDefaultConfig();
-        config = getConfig();
-        this.updateConfig();
+        // --------------------------
+        // Initialise Config
+        try {
+            YamlFileFactory.registerPlugin(this);
+            ConfigUtil.init();
+        } catch (ConfigNotImplementedException e) {
+            this.getComponentLogger().warn(text("Could not load configuration file."));
+            this.getComponentLogger().info(text("The config file must be configured!", YELLOW));
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        reloadConfig();
+
         // --------------------------
 
         // Copies osm.json5 into terraplusplus/config/
@@ -78,19 +90,21 @@ public final class TerraSharp extends JavaPlugin implements Listener {
 
         // Registering events
         Bukkit.getPluginManager().registerEvents(this, this);
-        if (TerraSharp.config.getBoolean("height_in_actionbar")) {
+        if (ConfigUtil.getInstance().configs[0].getBoolean(ConfigPaths.HEIGHT_IN_ACTIONBAR)) {
             Bukkit.getPluginManager().registerEvents(new PlayerMoveEvent(this), this);
         }
-        if (TerraSharp.config.getBoolean("linked_worlds.enabled")) {
+
+        if (ConfigUtil.getInstance().configs[0].getBoolean(ConfigPaths.LINKED_WORLDS_ENABLED)) {
             Bukkit.getPluginManager().registerEvents(new PlayerJoinEvent(playerHashMapManagement), this);
         }
         // --------------------------
 
-        TerraConfig.reducedConsoleMessages = TerraSharp.config.getBoolean("reduced_console_messages"); // Disables console log of fetching data
+        // Disables console log of fetching data
+        TerraConfig.reducedConsoleMessages = ConfigUtil.getInstance().configs[0].getBoolean(ConfigPaths.REDUCED_CONSOLE_MESSAGES);
 
         registerCommands();
 
-        Bukkit.getLogger().log(Level.INFO, "[T#] Terraplusminus successfully enabled");
+        getComponentLogger().info("[T#] TerraSharp successfully enabled");
     }
 
     @Override
@@ -100,14 +114,15 @@ public final class TerraSharp extends JavaPlugin implements Listener {
         this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
         // --------------------------
 
-        Bukkit.getLogger().log(Level.INFO, "[T#] Plugin deactivated");
+        getComponentLogger().info("[T#] Plugin deactivated");
     }
 
     @EventHandler
     public void onWorldInit(WorldInitEvent event) {
         String datapackName = "world-height-datapack.zip";
         File datapackPath = new File(event.getWorld().getWorldFolder() + File.separator + "datapacks" + File.separator + datapackName);
-        if (TerraSharp.config.getBoolean("height_datapack")) {
+
+        if (ConfigUtil.getInstance().configs[0].getBoolean(ConfigPaths.HEIGHT_DATAPACK)) {
             if (!event.getWorld().getName().contains("_nether") && !event.getWorld().getName().contains("_the_end")) { //event.getWorld().getGenerator() is null here
                 if (!datapackPath.exists()) {
                     copyFileFromResource(datapackName, datapackPath);
@@ -116,19 +131,21 @@ public final class TerraSharp extends JavaPlugin implements Listener {
         }
     }
 
-
     @Override
     public ChunkGenerator getDefaultWorldGenerator(@NotNull String worldName, String id) {
         // Multiverse different y-offset support
         int yOffset = 0;
-        if (TerraSharp.config.getBoolean("linked_worlds.enabled") && TerraSharp.config.getString("linked_worlds.method").equalsIgnoreCase("MULTIVERSE")) {
+
+        boolean linkedWorldsEnabled = ConfigUtil.getInstance().configs[0].getBoolean(ConfigPaths.LINKED_WORLDS_ENABLED);
+        String linkedWorldsMethod = ConfigUtil.getInstance().configs[0].getString(ConfigPaths.LINKED_WORLDS_METHOD);
+        if (linkedWorldsEnabled && linkedWorldsMethod.equalsIgnoreCase("MULTIVERSE")) {
             for (LinkedWorld world : ConfigurationHelper.getWorlds()) {
                 if (world.getWorldName().equalsIgnoreCase(worldName)) {
                     yOffset = world.getOffset();
                 }
             }
         } else {
-            yOffset = TerraSharp.config.getInt("y_offset");
+            yOffset = ConfigUtil.getInstance().configs[0].getInt(ConfigPaths.TERRAIN_OFFSET_Y);
         }
         return new RealWorldGenerator(yOffset);
     }
@@ -140,7 +157,7 @@ public final class TerraSharp extends JavaPlugin implements Listener {
         try {
             out = new FileOutputStream(destination);
         } catch (FileNotFoundException e) {
-            Bukkit.getLogger().log(Level.SEVERE, "[T+-] " + destination.getName() + " not found");
+            getComponentLogger().error("[T#] " + destination.getName() + " not found");
             throw new RuntimeException(e);
         }
         byte[] buf = new byte[1024];
@@ -150,13 +167,13 @@ public final class TerraSharp extends JavaPlugin implements Listener {
                 out.write(buf, 0, len);
             }
         } catch (IOException io) {
-            Bukkit.getLogger().log(Level.SEVERE, "[T+-] Could not copy " + destination);
+            getComponentLogger().error("[T#] Could not copy " + destination, io);
         } finally {
             try {
                 out.close();
                 if (resourcePath.equals("world-height-datapack.zip")) {
-                    Bukkit.getLogger().log(Level.CONFIG, "[T+-] Copied datapack to world folder");
-                    Bukkit.getLogger().log(Level.SEVERE, "[T+-] Stopping server to start again with datapack");
+                    getComponentLogger().info("[T+-] Copied datapack to world folder");
+                    getComponentLogger().warn("[T+-] Stopping server to start again with datapack");
                     Bukkit.getServer().shutdown();
                 }
             } catch (IOException e) {
@@ -165,87 +182,14 @@ public final class TerraSharp extends JavaPlugin implements Listener {
         }
     }
 
-    private void updateConfig() {
-        FileBuilder fileBuilder = new FileBuilder(this);
-
-        Double configVersion = null;
-        try {
-            configVersion = this.config.getDouble("config_version");
-        } catch (Exception e) {
-            e.printStackTrace();
-            Bukkit.getLogger().log(Level.SEVERE, "[T+-] Old config detected. Please delete and restart/reload.");
-        }
-        if (configVersion == 1.0) {
-            String passthroughTpll = TerraSharp.config.getString("passthrough_tpll");
-            if (passthroughTpll == null) {
-                passthroughTpll = "";
-            }
-            int y = (int) this.config.getDouble("terrain_offset");
-            this.config.set("terrain_offset.x", 0);
-            this.config.set("terrain_offset.y", y);
-            this.config.set("terrain_offset.z", 0);
-            this.config.set("config_version", 1.1);
-            this.saveConfig();
-            FileBuilder.addLineAbove("terrain_offset", "\n" +
-                    "# Generation -------------------------------------------\n" +
-                    "# Offset your section which fits into the world.");
-            FileBuilder.deleteLine("# Passthrough tpll");
-            FileBuilder.deleteLine("passthrough_tpll");
-            FileBuilder.addLineAbove("# Generation", "# Passthrough tpll to other bukkit plugins. It will not passthrough when it's empty. Type in the name of your plugin. E.g. Your plugin name is vanillatpll you set passthrough_tpll: 'vanillatpll'\n" +
-                    "passthrough_tpll: '" + passthroughTpll + "'\n\n\n"); //Fixes empty config entry from passthrough_tpll
-
-        }
-        if (configVersion == 1.1) {
-            this.config.set("config_version", 1.2);
-            this.saveConfig();
-            FileBuilder.addLineAbove("# If disabled, tree generation is turned off.", "" +
-                    "# Linked servers ---------------------------------------\n" +
-                    "# If the height limit on this server is not enough, other servers can be linked to generate higher or lower sections.\n" +
-                    "linked_servers:\n" +
-                    "  enabled: false\n" +
-                    "  servers:\n" +
-                    "    - another_server                 # e.g. this server has a datapack to extend height to 2032. it covers the height section (-2032) - (-1) m a.s.l. it has a y-offset of -2032.\n" +
-                    "    - current_server                 # e.g. this server has a datapack to extend height to 2032. it covers the height section 0 - 2032 m a.s.l.\n" +
-                    "    - another_server                 # e.g. this server has a datapack to extend height to 2032. it covers the height section 2033 - 4064 m a.s.l. it has a y-offset of 2032\n");
-        }
-        if (configVersion == 1.2) {
-            this.config.set("config_version", 1.3);
-            this.saveConfig();
-            FileBuilder.deleteLine("# Linked servers -------------------------------------");
-            FileBuilder.deleteLine("# If the height limit on this server is not enough, other servers can be linked to generate higher or lower sections");
-            FileBuilder.deleteLine("linked_servers:");
-            FileBuilder.deleteLine("  enabled: false");
-            FileBuilder.deleteLine("  servers:");
-            FileBuilder.deleteLine("- another_server");
-            FileBuilder.deleteLine("- current_server");
-            FileBuilder.addLineAbove("# If disabled, tree generation is turned off.", "" +
-                    "# Linked worlds ---------------------------------------\n" +
-                    "# If the height limit in this world/server is not enough, other worlds/servers can be linked to generate higher or lower sections\n" +
-                    "linked_worlds:\n" +
-                    "  enabled: false\n" +
-                    "  method: 'SERVER'                         # 'SERVER' or 'MULTIVERSE'\n" +
-                    "  # if method = MULTIVERSE -> world_name, y-offset\n" +
-                    "  worlds:\n" +
-                    "    - another_world/server                 # e.g. this world/server has a datapack to extend height to 2032. it covers the height section (-2032) - (-1) m a.s.l. it has a y-offset of -2032.\n" +
-                    "    - current_world/server                 # do not change! e.g. this world/server has a datapack to extend height to 2032. it covers the height section 0 - 2032 m a.s.l.\n" +
-                    "    - another_world/server                 # e.g. this world/server has a datapack to extend height to 2032. it covers the height section 2033 - 4064 m a.s.l. it has a y-offset of 2032\n\n");
-        }
-        if (configVersion == 1.3) {
-            this.config.set("config_version", 1.4);
-            this.saveConfig();
-            FileBuilder.addLineAfter("prefix:",
-                    "\n# If disabled, the plugin will log every fetched data to the console\n" +
-                            "reduced_console_messages: true");
-            FileBuilder.deleteLine("- another_world/server");
-            FileBuilder.deleteLine("- current_world/server");
-            FileBuilder.addLineAbove("# If disabled, tree generation is turned off.",
-                    "    - name: another_world/server          # e.g. this world/server has a datapack to extend height to 2032. it covers the height section (-2032) - (-1) m a.s.l. it has a y-offset of -2032.\n" +
-                            "      offset: 2032\n" +
-                            "    - name: current_world/server                 # e.g. this world/server has a datapack to extend height to 2032. it covers the height section 0 - 2032 m a.s.l.\n" +
-                            "      offset: 0\n" +
-                            "    - name: another_world/server                 # e.g. this world/server has a datapack to extend height to 2032. it covers the height section 2033 - 4064 m a.s.l. it has a y-offset of 2032\n" +
-                            "      offset: -2032\n\n");
-        }
+    @Override
+    public void reloadConfig() {
+        ConfigUtil.getInstance().reloadFiles();
+        ConfigUtil.getInstance().saveFiles();
+        ChatUtils.setChatFormat(
+                ConfigUtil.getInstance().configs[0].getString(ConfigPaths.CHAT_FORMAT_INFO_PREFIX),
+                ConfigUtil.getInstance().configs[0].getString(ConfigPaths.CHAT_FORMAT_ALERT_PREFIX)
+        );
     }
 
     private void registerCommands() {
@@ -253,7 +197,7 @@ public final class TerraSharp extends JavaPlugin implements Listener {
         manager.registerEventHandler(LifecycleEvents.COMMANDS, event -> {
             final Commands commands = event.registrar();
             commands.register("tpll", "Teleports you to longitude and latitude", List.of("tpc"), new TpllCommand());
-            commands.register("tpsg", "Teleports you to LV95 swiss grid coordinates", new TpllCommand());
+            commands.register("tpsg", "Teleports you to LV95 swiss grid coordinates", new TpsgCommand());
             commands.register("where", "Gives you the longitude and latitude of your minecraft coordinates", new WhereCommand());
             commands.register("offset", "Displays the x,y and z offset of your world", new OffsetCommand());
         });

@@ -1,17 +1,23 @@
 package de.btegermany.terraplusminus.commands;
 
-import de.btegermany.terraplusminus.TerraSharp;
+import com.alpsbte.alpslib.io.config.ConfigurationUtil;
+import de.btegermany.terraplusminus.utils.ChatUtils;
+import de.btegermany.terraplusminus.utils.io.ConfigPaths;
+import de.btegermany.terraplusminus.utils.io.ConfigUtil;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.buildtheearth.terraminusminus.generator.EarthGeneratorSettings;
 import net.buildtheearth.terraminusminus.projection.OutOfProjectionBoundsException;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.DARK_GRAY;
+import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
+
+@SuppressWarnings("UnstableApiUsage")
 public class WhereCommand implements BasicCommand {
 
     private final EarthGeneratorSettings bteGeneratorSettings = EarthGeneratorSettings.parse(EarthGeneratorSettings.BTE_DEFAULT_SETTINGS);
@@ -23,11 +29,13 @@ public class WhereCommand implements BasicCommand {
             return;
         }
         if (!player.hasPermission("t+-.where")) {
-            player.sendMessage(TerraSharp.config.getString("prefix") + "§7No permission for /where");
+            player.sendMessage(ChatUtils.getAlertMessage("No permission for /where"));
             return;
         }
-        int xOffset = TerraSharp.config.getInt("terrain_offset.x");
-        int zOffset = TerraSharp.config.getInt("terrain_offset.z");
+
+        ConfigurationUtil.ConfigFile configFile = ConfigUtil.getInstance().configs[0];
+        int xOffset = configFile.getInt(ConfigPaths.TERRAIN_OFFSET_X);
+        int zOffset = configFile.getInt(ConfigPaths.TERRAIN_OFFSET_Z);
 
         double[] mcCoordinates = new double[2];
         mcCoordinates[0] = player.getLocation().getX() - xOffset;
@@ -39,10 +47,10 @@ public class WhereCommand implements BasicCommand {
         } catch (OutOfProjectionBoundsException e) {
             e.printStackTrace();
         }
-        TextComponent message = new TextComponent(TerraSharp.config.getString("prefix") + "§7Your coordinates are:");
-        message.addExtra("\n§8" + coordinates[1] + ", " + coordinates[0] + "§7.");
-        message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://maps.google.com/maps?t=k&q=loc:" + coordinates[1] + "+" + coordinates[0]));
-        message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Click here to view in Google Maps.").create()));
-        player.spigot().sendMessage(message);
+
+        player.sendMessage(ChatUtils.getInfoMessage("Your coordinates are:"));
+        player.sendMessage(text(coordinates[1] + ", " + coordinates[0], DARK_GRAY)
+                .clickEvent(ClickEvent.openUrl("https://maps.google.com/maps?t=k&q=loc:" + coordinates[1] + "+" + coordinates[0]))
+                .hoverEvent(HoverEvent.showText(text("Click here to view in Google Maps.", GRAY))));
     }
 }

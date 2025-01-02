@@ -1,6 +1,7 @@
 package de.btegermany.terraplusminus.utils;
 
-import de.btegermany.terraplusminus.TerraSharp;
+import de.btegermany.terraplusminus.utils.io.ConfigPaths;
+import de.btegermany.terraplusminus.utils.io.ConfigUtil;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public final class ConfigurationHelper {
-    private static final List<LinkedWorld> worlds = convertList(TerraSharp.config.getMapList("linked_worlds.worlds"));
+    private static final List<LinkedWorld> worlds = convertList(ConfigUtil.getInstance().configs[0].getMapList(ConfigPaths.LINKED_WORLDS_WORLDS));
 
     /**
      * Returns a material from the configuration,
@@ -64,7 +65,7 @@ public final class ConfigurationHelper {
         if (currentIndex >= 0 && currentIndex < worlds.size() - 1) {
             return worlds.get(currentIndex + 1);
         } else {
-            // Entweder wurde die Welt nicht gefunden oder sie ist die letzte Welt in der Liste
+            // either the world was not found or it is the last world in the list
             return null;
         }
     }
@@ -83,7 +84,7 @@ public final class ConfigurationHelper {
         if (currentIndex > 0) {
             return worlds.get(currentIndex - 1);
         } else {
-            // Entweder wurde die Welt nicht gefunden oder sie ist die erste Welt in der Liste
+            // either the world was not found or it is the first world in the list
             return null;
         }
     }
