@@ -40,7 +40,6 @@ public class WhereCommand implements BasicCommand {
         double[] mcCoordinates = new double[2];
         mcCoordinates[0] = player.getLocation().getX() - xOffset;
         mcCoordinates[1] = player.getLocation().getZ() - zOffset;
-        System.out.println(mcCoordinates[0] + ", " + mcCoordinates[1]);
         double[] coordinates = new double[0];
         try {
             coordinates = bteGeneratorSettings.projection().toGeo(mcCoordinates[0], mcCoordinates[1]);
