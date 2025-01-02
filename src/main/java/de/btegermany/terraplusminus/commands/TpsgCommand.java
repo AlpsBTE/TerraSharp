@@ -1,6 +1,6 @@
 package de.btegermany.terraplusminus.commands;
 
-import de.btegermany.terraplusminus.Terraplusminus;
+import de.btegermany.terraplusminus.TerraSharp;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.entity.Player;
@@ -10,7 +10,7 @@ public class TpsgCommand implements BasicCommand {
     public void execute(CommandSourceStack stack, String[] strings) {
         if (!(stack.getSender() instanceof Player player)) return;
         if (!player.hasPermission("t+-.tpll")) {
-            player.sendMessage(Terraplusminus.config.getString("prefix") + "§7No permission for /tpll");
+            player.sendMessage(TerraSharp.config.getString("prefix") + "§7No permission for /tpll");
             return;
         }
 

@@ -2,7 +2,7 @@ package de.btegermany.terraplusminus.gen;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
-import de.btegermany.terraplusminus.Terraplusminus;
+import de.btegermany.terraplusminus.TerraSharp;
 import de.btegermany.terraplusminus.gen.tree.TreePopulator;
 import de.btegermany.terraplusminus.utils.ConfigurationHelper;
 import lombok.Getter;
@@ -79,11 +79,11 @@ public class RealWorldGenerator extends ChunkGenerator {
 
         GeographicProjection projection = new OffsetProjectionTransform(
                 settings.projection(),
-                Terraplusminus.config.getInt("terrain_offset.x"),
-                Terraplusminus.config.getInt("terrain_offset.z")
+                TerraSharp.config.getInt("terrain_offset.x"),
+                TerraSharp.config.getInt("terrain_offset.z")
         );
         if (yOffset == 0) {
-            this.yOffset = Terraplusminus.config.getInt("terrain_offset.y");
+            this.yOffset = TerraSharp.config.getInt("terrain_offset.y");
         } else {
             this.yOffset = yOffset;
         }
@@ -96,11 +96,11 @@ public class RealWorldGenerator extends ChunkGenerator {
                 .softValues()
                 .build(new ChunkDataLoader(this.settings));
 
-        this.surfaceMaterial = ConfigurationHelper.getMaterial(Terraplusminus.config, "surface_material", GRASS_BLOCK);
+        this.surfaceMaterial = ConfigurationHelper.getMaterial(TerraSharp.config, "surface_material", GRASS_BLOCK);
         this.materialMapping = Map.of(
-                "minecraft:bricks", ConfigurationHelper.getMaterial(Terraplusminus.config, "building_outlines_material", BRICKS),
-                "minecraft:gray_concrete", ConfigurationHelper.getMaterial(Terraplusminus.config, "road_material", GRAY_CONCRETE_POWDER),
-                "minecraft:dirt_path", ConfigurationHelper.getMaterial(Terraplusminus.config, "path_material", MOSS_BLOCK)
+                "minecraft:bricks", ConfigurationHelper.getMaterial(TerraSharp.config, "building_outlines_material", BRICKS),
+                "minecraft:gray_concrete", ConfigurationHelper.getMaterial(TerraSharp.config, "road_material", GRAY_CONCRETE_POWDER),
+                "minecraft:dirt_path", ConfigurationHelper.getMaterial(TerraSharp.config, "path_material", MOSS_BLOCK)
         );
 
     }

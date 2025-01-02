@@ -1,6 +1,6 @@
 package de.btegermany.terraplusminus.events;
 
-import de.btegermany.terraplusminus.Terraplusminus;
+import de.btegermany.terraplusminus.TerraSharp;
 import de.btegermany.terraplusminus.utils.ConfigurationHelper;
 import de.btegermany.terraplusminus.utils.LinkedWorld;
 import io.papermc.lib.PaperLib;
@@ -43,11 +43,11 @@ public class PlayerMoveEvent implements Listener {
 
     public PlayerMoveEvent(Plugin plugin) {
         this.plugin = plugin;
-        this.xOffset = Terraplusminus.config.getInt("terrain_offset.x");
-        this.yOffsetConfigEntry = Terraplusminus.config.getInt("terrain_offset.y");
-        this.zOffset = Terraplusminus.config.getInt("terrain_offset.z");
-        this.linkedWorldsEnabled = Terraplusminus.config.getBoolean("linked_worlds.enabled");
-        this.linkedWorldsMethod = Terraplusminus.config.getString("linked_worlds.method");
+        this.xOffset = TerraSharp.config.getInt("terrain_offset.x");
+        this.yOffsetConfigEntry = TerraSharp.config.getInt("terrain_offset.y");
+        this.zOffset = TerraSharp.config.getInt("terrain_offset.z");
+        this.linkedWorldsEnabled = TerraSharp.config.getBoolean("linked_worlds.enabled");
+        this.linkedWorldsMethod = TerraSharp.config.getString("linked_worlds.method");
         this.worldHashMap = new HashMap<>();
         if (this.linkedWorldsEnabled && this.linkedWorldsMethod.equalsIgnoreCase("MULTIVERSE")) {
             this.worlds = ConfigurationHelper.getWorlds();
@@ -122,6 +122,6 @@ public class PlayerMoveEvent implements Listener {
         Location newLocation = new Location(tpWorld, location.getX() + xOffset, tpWorld.getMinHeight(), location.getZ() + zOffset, location.getYaw(), location.getPitch());
         PaperLib.teleportAsync(p, newLocation);
         p.setFlying(true);
-        p.sendMessage(Terraplusminus.config.getString("prefix") + "§7You have been teleported to another world.");
+        p.sendMessage(TerraSharp.config.getString("prefix") + "§7You have been teleported to another world.");
     }
 }

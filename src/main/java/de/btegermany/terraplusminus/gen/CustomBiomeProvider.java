@@ -1,6 +1,6 @@
 package de.btegermany.terraplusminus.gen;
 
-import de.btegermany.terraplusminus.Terraplusminus;
+import de.btegermany.terraplusminus.TerraSharp;
 import de.btegermany.terraplusminus.data.KoppenClimateData;
 import net.buildtheearth.terraminusminus.projection.GeographicProjection;
 import net.buildtheearth.terraminusminus.projection.OutOfProjectionBoundsException;
@@ -32,7 +32,7 @@ public class CustomBiomeProvider extends BiomeProvider {
     @NotNull
     @Override
     public Biome getBiome(@NotNull WorldInfo worldInfo, int x, int y, int z) {
-        if (Terraplusminus.config.getBoolean("different_biomes")) {
+        if (TerraSharp.config.getBoolean("different_biomes")) {
             double[] coords;
             try {
                 coords = this.projection.toGeo(x, z);

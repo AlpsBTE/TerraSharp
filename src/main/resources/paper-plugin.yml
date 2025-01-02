@@ -1,7 +1,7 @@
-name: Terraplusminus
+name: TerraSharp
 version: '1.4.0'
-main: de.btegermany.terraplusminus.Terraplusminus
-description: A plugin which implements the terra-- api in a spigot plugin
+main: de.btegermany.terraplusminus.TerraSharp
+description: A plugin which implements the terra-- api in a paper plugin
 api-version: '1.21'
 prefix: T+-
 authors: [ meysster, Nudlsupp, Nachwahl ]

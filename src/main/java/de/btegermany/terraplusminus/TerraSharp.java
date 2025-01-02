@@ -1,6 +1,5 @@
 package de.btegermany.terraplusminus;
 
-
 import de.btegermany.terraplusminus.commands.OffsetCommand;
 import de.btegermany.terraplusminus.commands.TpllCommand;
 import de.btegermany.terraplusminus.commands.WhereCommand;
@@ -33,9 +32,9 @@ import java.io.*;
 import java.util.List;
 import java.util.logging.Level;
 
-public final class Terraplusminus extends JavaPlugin implements Listener {
+public final class TerraSharp extends JavaPlugin implements Listener {
     public static FileConfiguration config;
-    public static Terraplusminus instance;
+    public static TerraSharp instance;
 
     @Override
     public void onEnable() {
@@ -43,13 +42,13 @@ public final class Terraplusminus extends JavaPlugin implements Listener {
         PluginDescriptionFile pdf = this.getDescription();
         String pluginVersion = pdf.getVersion();
 
-        getLogger().log(Level.INFO, "\n╭━━━━╮\n" +
-                "┃╭╮╭╮┃\n" +
-                "╰╯┃┃┣┻━┳━┳━┳━━╮╭╮\n" +
-                "╱╱┃┃┃┃━┫╭┫╭┫╭╮┣╯╰┳━━╮\n" +
-                "╱╱┃┃┃┃━┫┃┃┃┃╭╮┣╮╭┻━━╯\n" +
-                "╱╱╰╯╰━━┻╯╰╯╰╯╰╯╰╯\n" +
-                "Version: " + pluginVersion);
+        getLogger().log(Level.INFO,
+                "  _____  _  _\n" +
+                " |_   _|| || |_\n" +
+                "   | ||_  ..  _|\n" +
+                "   | ||_      _|\n" +
+                "   |_|  |_||_|\n" +
+                "TerraSharp version: " + pluginVersion);
 
         // Config ------------------]
         ConfigurationSerialization.registerClass(ConfigurationSerializable.class);
@@ -79,19 +78,19 @@ public final class Terraplusminus extends JavaPlugin implements Listener {
 
         // Registering events
         Bukkit.getPluginManager().registerEvents(this, this);
-        if (Terraplusminus.config.getBoolean("height_in_actionbar")) {
+        if (TerraSharp.config.getBoolean("height_in_actionbar")) {
             Bukkit.getPluginManager().registerEvents(new PlayerMoveEvent(this), this);
         }
-        if (Terraplusminus.config.getBoolean("linked_worlds.enabled")) {
+        if (TerraSharp.config.getBoolean("linked_worlds.enabled")) {
             Bukkit.getPluginManager().registerEvents(new PlayerJoinEvent(playerHashMapManagement), this);
         }
         // --------------------------
 
-        TerraConfig.reducedConsoleMessages = Terraplusminus.config.getBoolean("reduced_console_messages"); // Disables console log of fetching data
+        TerraConfig.reducedConsoleMessages = TerraSharp.config.getBoolean("reduced_console_messages"); // Disables console log of fetching data
 
         registerCommands();
 
-        Bukkit.getLogger().log(Level.INFO, "[T+-] Terraplusminus successfully enabled");
+        Bukkit.getLogger().log(Level.INFO, "[T#] Terraplusminus successfully enabled");
     }
 
     @Override
@@ -101,14 +100,14 @@ public final class Terraplusminus extends JavaPlugin implements Listener {
         this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
         // --------------------------
 
-        Bukkit.getLogger().log(Level.INFO, "[T+-] Plugin deactivated");
+        Bukkit.getLogger().log(Level.INFO, "[T#] Plugin deactivated");
     }
 
     @EventHandler
     public void onWorldInit(WorldInitEvent event) {
         String datapackName = "world-height-datapack.zip";
         File datapackPath = new File(event.getWorld().getWorldFolder() + File.separator + "datapacks" + File.separator + datapackName);
-        if (Terraplusminus.config.getBoolean("height_datapack")) {
+        if (TerraSharp.config.getBoolean("height_datapack")) {
             if (!event.getWorld().getName().contains("_nether") && !event.getWorld().getName().contains("_the_end")) { //event.getWorld().getGenerator() is null here
                 if (!datapackPath.exists()) {
                     copyFileFromResource(datapackName, datapackPath);
@@ -122,14 +121,14 @@ public final class Terraplusminus extends JavaPlugin implements Listener {
     public ChunkGenerator getDefaultWorldGenerator(@NotNull String worldName, String id) {
         // Multiverse different y-offset support
         int yOffset = 0;
-        if (Terraplusminus.config.getBoolean("linked_worlds.enabled") && Terraplusminus.config.getString("linked_worlds.method").equalsIgnoreCase("MULTIVERSE")) {
+        if (TerraSharp.config.getBoolean("linked_worlds.enabled") && TerraSharp.config.getString("linked_worlds.method").equalsIgnoreCase("MULTIVERSE")) {
             for (LinkedWorld world : ConfigurationHelper.getWorlds()) {
                 if (world.getWorldName().equalsIgnoreCase(worldName)) {
                     yOffset = world.getOffset();
                 }
             }
         } else {
-            yOffset = Terraplusminus.config.getInt("y_offset");
+            yOffset = TerraSharp.config.getInt("y_offset");
         }
         return new RealWorldGenerator(yOffset);
     }
@@ -177,7 +176,7 @@ public final class Terraplusminus extends JavaPlugin implements Listener {
             Bukkit.getLogger().log(Level.SEVERE, "[T+-] Old config detected. Please delete and restart/reload.");
         }
         if (configVersion == 1.0) {
-            String passthroughTpll = Terraplusminus.config.getString("passthrough_tpll");
+            String passthroughTpll = TerraSharp.config.getString("passthrough_tpll");
             if (passthroughTpll == null) {
                 passthroughTpll = "";
             }

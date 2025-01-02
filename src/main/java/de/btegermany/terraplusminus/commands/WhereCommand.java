@@ -1,6 +1,6 @@
 package de.btegermany.terraplusminus.commands;
 
-import de.btegermany.terraplusminus.Terraplusminus;
+import de.btegermany.terraplusminus.TerraSharp;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.buildtheearth.terraminusminus.generator.EarthGeneratorSettings;
@@ -23,11 +23,11 @@ public class WhereCommand implements BasicCommand {
             return;
         }
         if (!player.hasPermission("t+-.where")) {
-            player.sendMessage(Terraplusminus.config.getString("prefix") + "§7No permission for /where");
+            player.sendMessage(TerraSharp.config.getString("prefix") + "§7No permission for /where");
             return;
         }
-        int xOffset = Terraplusminus.config.getInt("terrain_offset.x");
-        int zOffset = Terraplusminus.config.getInt("terrain_offset.z");
+        int xOffset = TerraSharp.config.getInt("terrain_offset.x");
+        int zOffset = TerraSharp.config.getInt("terrain_offset.z");
 
         double[] mcCoordinates = new double[2];
         mcCoordinates[0] = player.getLocation().getX() - xOffset;
@@ -39,7 +39,7 @@ public class WhereCommand implements BasicCommand {
         } catch (OutOfProjectionBoundsException e) {
             e.printStackTrace();
         }
-        TextComponent message = new TextComponent(Terraplusminus.config.getString("prefix") + "§7Your coordinates are:");
+        TextComponent message = new TextComponent(TerraSharp.config.getString("prefix") + "§7Your coordinates are:");
         message.addExtra("\n§8" + coordinates[1] + ", " + coordinates[0] + "§7.");
         message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://maps.google.com/maps?t=k&q=loc:" + coordinates[1] + "+" + coordinates[0]));
         message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Click here to view in Google Maps.").create()));

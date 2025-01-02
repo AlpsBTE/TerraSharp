@@ -1,6 +1,6 @@
 package de.btegermany.terraplusminus.utils;
 
-import de.btegermany.terraplusminus.Terraplusminus;
+import de.btegermany.terraplusminus.TerraSharp;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public final class ConfigurationHelper {
-    private static final List<LinkedWorld> worlds = convertList(Terraplusminus.config.getMapList("linked_worlds.worlds"));
+    private static final List<LinkedWorld> worlds = convertList(TerraSharp.config.getMapList("linked_worlds.worlds"));
 
     /**
      * Returns a material from the configuration,
